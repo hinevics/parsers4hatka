@@ -1,16 +1,21 @@
 from dagster import asset
 
-from pages_parser import kufar
+from pages_parser.kufar import kufar
+from dagster_project.config import URL_KUFAR, API_URL_KUFAR
 
 
 @asset
 def parser_realt():
-    kufar.function_return()
+    pass
 
 
 @asset
 def parser_kufar():
-    pass
+    kufar.parsing(
+        url_kufar=URL_KUFAR,
+        api_kufar=API_URL_KUFAR,
+        size=10
+    )
 
 
 @asset
