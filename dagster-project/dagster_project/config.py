@@ -9,5 +9,11 @@ load_dotenv()
 # HATA = os.get("HATA")
 
 # kufar config
+
+# url
 URL_KUFAR = os.getenv("URL_KUFAR")
 API_URL_KUFAR = os.getenv("API_URL_KUFAR")
+
+# path
+
+PATH_DATA_KUFAR = os.getenv("PATH_DATA_KUFAR")
