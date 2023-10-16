@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-from pages_parser.kufar.config import API_URL_KUFAR, HEADERS, URL_KUFAR
+from pages_parser.kufar.config import HEADERS
 import pages_parser.kufar.css_selectors as selectors
 from pages_parser.kufar import css_class as class_
 
