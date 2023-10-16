@@ -4,7 +4,8 @@ from dagster import asset
 
 from pages_parser.kufar import kufar
 from dagster_project.config import URL_KUFAR, API_URL_KUFAR, PATH_DATA_KUFAR
-from saver.saver_data_parsed import saver 
+from saver.saver_data_parsed import saver
+
 
 @asset
 def parser_realt():
@@ -12,7 +13,7 @@ def parser_realt():
 
 
 @asset
-def parser_kufar() -> Dict[str, Any]:
+def parser_kufar():
     data = kufar.parsing(
         url_kufar=URL_KUFAR,
         api_kufar=API_URL_KUFAR,

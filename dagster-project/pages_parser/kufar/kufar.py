@@ -5,17 +5,15 @@ from typing import Iterator
 import time
 import logging
 import colorlog
+from typing import Any
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-# from pages_parser.kufar.config import API_URL_KUFAR, HEADERS, URL_KUFAR
-# import pages_parser.kufar.css_selectors as selectors
-
-from config import API_URL_KUFAR, HEADERS, URL_KUFAR
-import css_selectors as selectors
-import css_class as class_
+from pages_parser.kufar.config import API_URL_KUFAR, HEADERS, URL_KUFAR
+import pages_parser.kufar.css_selectors as selectors
+from pages_parser.kufar import css_class as class_
 
 
 # format logs
@@ -47,12 +45,12 @@ def get_id_ad(api: str, size: int) -> Iterator[int]:
 
     url = api.format(size=size)
     ads = requests.get(headers=HEADERS, url=url).json()['ads']
-    print("len ads = ", len(ads))
+    logger.debug(f"len ads = {len(ads)}")
     for a in ads:
         yield a['i']
 
 
-def parsing(url_kufar: str, api_kufar: str, size: int = 500, ):
+def parsing(url_kufar: str, api_kufar: str, size: int = 500, ) -> dict[str, Any]:
 
     options = FirefoxOptions()
     options.add_argument('--headless')
@@ -200,14 +198,7 @@ def parsing(url_kufar: str, api_kufar: str, size: int = 500, ):
             ad_data['imgs'] = None
 
         data[i] = ad_data
+        print('-'*100)
+        print(data)
         break
     return data
-
-
-if __name__ == "__main__":
-    data = parsing(
-        url_kufar=URL_KUFAR,
-        api_kufar=API_URL_KUFAR,
-        size=10
-    )
-    print(data)

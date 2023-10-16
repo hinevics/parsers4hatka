@@ -3,5 +3,5 @@ import pickle
 
 
 def saver(data: Dict[str, Any], path: str) -> None:
-    with open(path, mode='wb', encoding='utf-8') as file:
+    with open(path, mode='+wb') as file:
         pickle.dump(data, file)
