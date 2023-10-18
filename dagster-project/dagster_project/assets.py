@@ -1,5 +1,3 @@
-from typing import Dict, Any
-
 from dagster import asset
 
 from pages_parser.kufar import kufar

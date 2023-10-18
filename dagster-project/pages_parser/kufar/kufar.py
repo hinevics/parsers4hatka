@@ -24,7 +24,7 @@ formatter_file = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # all logs
-logger = logging.getLogger('logger')
+logger = logging.getLogger('logger-kufar')
 logger.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
@@ -72,6 +72,8 @@ def parsing(url_kufar: str, api_kufar: str, size: int = 500, ) -> dict[str, Any]
         time.sleep(5)
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+        # TODO: add titile
 
         try:
             select_price = soup.select(selector=selectors.PRICE)
