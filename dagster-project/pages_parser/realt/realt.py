@@ -27,49 +27,15 @@ console_handler.setFormatter(formatter_console)
 logger.addHandler(console_handler)
 
 
-
-def parsing_ad(ad: Tag):
-    href = ad.find_all('a')[0]
-    try:
-        number_ad = re.search(
-            pattern=r'\№(?P<number>\d+)',
-            string=href['aria-label']).group('number')
-    except Exception as e:
-        logger.error(
-            (f"Exception:\t{e}"
-                "Problem with parsing number ad."
-                "Complete of ad processing. Go to the next ad.")
-        )
-    logger.info(f"Start parsing ad {ad}")
-
-    if str(number_ad) in data.keys():
-        logger.warning(
-            (f"Ad number {number_ad} exists."
-                f"Completion of ad processing. Go to the next ad.")
-        )
-        
-        # continue  # TODO: Сделать continue, сделать как флаг который возрашает функция!!!
+def parsing_ad(soup_ad: Tag) -> dict | bool:
 
     ad_data = {}
 
-    url_ad = URL_REALT_BASE + href['href']
-    ad_data["url_ad"] = url_ad
-
-    logger.debug(f"url_ad:\t{url_ad}")
-    try:
-        driver.get(url_ad)
-        soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
-    except Exception as e:
-        logger.error(
-            (f"Exception:\t{e}"
-                f"Problem with load page {url_ad}"
-                "Complete of ad processing. Go to the next ad.")
-        )
-        continue
-
     # title
     try:
-        title = soup_ad.select('h1.order-1')  # TODO: fix selector
+        title = soup_ad.select(
+            selector=selectors.TITLE
+        )
         if title:
             title = title[0].text
         else:
@@ -89,7 +55,7 @@ def parsing_ad(ad: Tag):
     # description
     try:
         description = soup_ad.select(
-            'section.bg-white:nth-child(3) > div:nth-child(2)')  # TODO: fix selector
+            selector=selectors.DESC)
         if description:
             description = ' '.join([i.text for i in description])
         else:
@@ -101,7 +67,6 @@ def parsing_ad(ad: Tag):
                 "Problem with processing description."
                 "Using None as the value.")
         )
-        logger.error(f"PROBLEM {e} WITH:\tdescription")
         description = ''
     logger.debug(f"description={description}")
     ad_data['description'] = ''
@@ -121,7 +86,6 @@ def parsing_ad(ad: Tag):
                 "Problem with processing description_note."
                 "Using '' as the value.")
         )
-        logger.error("PROBLEM WITH:\tdescription_note")
         description_note = ''
     logger.debug(f"description_note={description_note}")
     ad_data["description"] = ad_data["description"] + ' ' + description_note
@@ -279,11 +243,43 @@ def parsing(url_realt: str, size: int):
             soup = BeautifulSoup(html, 'html.parser')
             div_elements_with_data_index = soup.find_all('div', {'data-index': True})
             for ad in div_elements_with_data_index:
-                updating_dict = parsing_ad(ad=ad)
-                if updating_dict:
-                    data.update(updating_dict)
-                else:
-                    pass  # TODO: это заготовка на обработку ошибок с пропускам объявления
+
+                href = ad.find_all('a')[0]
+
+                try:
+                    number_ad = re.search(
+                        pattern=r'\№(?P<number>\d+)',
+                        string=href['aria-label']).group('number')
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                            "Problem with parsing number ad."
+                            "Complete of ad processing. Go to the next ad.")
+                    )
+
+                if str(number_ad) in data.keys():
+                    logger.warning(
+                        (f"Ad number {number_ad} exists."
+                            f"Completion of ad processing. Go to the next ad.")
+                    )
+                    continue
+                url_ad = URL_REALT_BASE + href['href']
+
+                logger.debug(f"url_ad:\t{url_ad}")
+                try:
+                    driver.get(url_ad)
+                    soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                            f"Problem with load page {url_ad}"
+                            "Complete of ad processing. Go to the next ad.")
+                    )
+                    continue
+                logger.info(f"Start parsing ad {ad}")
+                ad_data = parsing_ad(soup_ad=soup_ad)
+                ad_data["url_ad"] = url_ad
+                data[number_ad] = ad_data
             break
         except Exception as e:
             logger.error(
