@@ -59,9 +59,12 @@ def parsing(url_realt: str, size: int):
                 url_ad = URL_REALT_BASE + href['href']
                 ad_data["url_ad"] = url_ad
 
+                logging.debug(f"url_ad:\t{url_ad}")
+
                 driver.get(url_ad)
                 soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
 
+                # title
                 try:
                     title = soup_ad.select('h1.order-1')  # TODO: fix selector
                     if title:
@@ -69,11 +72,14 @@ def parsing(url_realt: str, size: int):
                     else:
                         logger.warning("title is empty")
                         title = None
-                    ad_data['title'] = title
+
                 except Exception:
                     logger.error("PROBLEM WITH:\ttitle")
-                    ad_data['title'] = None
+                    title = None
+                ad_data['title'] = title
+                logging.debug(f'title:\t{title}')
 
+                # description
                 try:
                     description = soup_ad.select(
                         'section.bg-white:nth-child(3) > div:nth-child(2)')  # TODO: fix selector
@@ -82,10 +88,13 @@ def parsing(url_realt: str, size: int):
                     else:
                         logger.warning("description is empty")
                         description = ''
-                    ad_data['description'] = description
                 except Exception:
                     logger.error("PROBLEM WITH:\tdescription")
-                    ad_data['description'] = ''
+                    description = ''
+                logging.debug(f"description:\t{description}")
+                ad_data['description'] = ''
+
+                # description_note
                 try:
                     description_note = soup_ad.select(
                         'section.bg-white:nth-child(6) > div:nth-child(2)')
@@ -94,78 +103,107 @@ def parsing(url_realt: str, size: int):
                     else:
                         logger.warning("description_note is empty")
                         description_note = ''
-                    ad_data["description"] = ad_data["description"] + ' ' + description_note
                 except Exception:
                     logger.error("PROBLEM WITH:\tdescription_note")
+                    description_note = ''
+                logging.debug(f"description_note:\t{description_note}")
+                ad_data["description"] = ad_data["description"] + ' ' + description_note
 
+                # adress
                 try:
                     adress = soup_ad.select(
                         selector=r'li.md\:w-auto'
                     )
                     if adress:
                         adress = adress[0].text
-                        logger.debug(f"adress:\t{adress}")
                     else:
                         logger.warning("adress is empty")
                         adress = None
                     logger.debug(f"adress:\t{adress}")
-                    ad_data['adress'] = adress
                 except Exception:
                     logger.error("PROBLEM WITH:\tadress")
-                    logger.error("adress:\tNone")
-                    ad_data['adress'] = None
+                    adress = None
+                logger.debug(f"adress:\t{adress}")
+                ad_data['adress'] = adress
 
+                # price
                 try:
                     price = soup_ad.select(
                         r'.md\:items-center > div:nth-child(1) > h2:nth-child(1)')
                     if price:
                         price = price[0].text
-                        logger.debug(f"price:\t{price}")
                     else:
-                        logger.warning("price:\tNone")
+                        logger.warning("price is empty.")
                         price = None
-                    ad_data["price"] = price
                 except Exception:
                     logger.error("PROBLEM WITH:\tprice")
-                    ad_data["price"] = None
+                    price = None
+                logging.debug(f"price:\t{price}")
+                ad_data["price"] = price
 
+                # update_date
                 try:
                     update_date = soup_ad.select(  # TODO: Вынесети selector в отдельный модуль
                         selector=r'div.text-caption:nth-child(2) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1)'
                     )
                     if update_date:
                         update_date = update_date[0].text
-                        logger.debug(f"update_date:\t{update_date}")
                     else:
                         update_date = None
                         logger.warning("update_date is empty.")
-                        logger.debug(f"update_date:\t{update_date}")
-                    ad_data["update_date"] = update_date
                 except Exception:
-                    logger.error("PROBLEM WITH:\t -- update_date -- update_date:\tNone.")
-                    ad_data["update_date"] = None
+                    logger.error("PROBLEM WITH:\tupdate_date")
+                    update_date = None
+                logger.debug(f"update_date:\t{update_date}")
+                ad_data["update_date"] = update_date
 
                 chars_dict = {}
-
-                characteristics = soup_ad.select(r'ul.w-full:nth-child(2)')
-                if characteristics:
-                    li_params = characteristics[0].find_all('li')
-                    if li_params:
-                        for li in li_params:
-                            name_params = li.find_all('span')[0].text
-                            value_params = li.find_all('p')[0].text
-                            chars_dict[name_params] = value_params
+                try:
+                    characteristics = soup_ad.select(r'ul.w-full:nth-child(2)')
+                    if characteristics:
+                        li_params = characteristics[0].find_all('li')
+                        if li_params:
+                            for li in li_params:
+                                name_params = li.find_all('span')
+                                value_params = li.find_all('p')
+                                if name_params and value_params:
+                                    chars_dict[name_params.lower()] = value_params
+                                else:
+                                    logger.warning((f"Params is empty.\nname_params:\t{name_params},"
+                                                    f"value_params:\t{value_params}"))
+                        else:
+                            logger.warning("li_params is empty.")
                     else:
-                        logger.warning("li_params is empty.")
-                else:
-                    logger.warning("characteristics is empty.")
-
+                        logger.warning("characteristics is empty.")
+                except Exception:
+                    logging.error("PROBLEM WITH:\tcharacteristics")
                 logger.debug(f"chars_dict:\t{chars_dict}")
                 ad_data['chars'] = chars_dict
+
+                count_romms = ad_data['chars']["количество комнат"]
+                logging.debug(f"count_romms:\t{count_romms}")
+                ad_data["count_romms"] = count_romms
+
+                # number_floor
+                try:
+                    number_floor = soup_ad.select(
+                        selector=r'div.last\:mr-0:nth-child(3) > div:nth-child(1)'
+                        )
+                    if number_floor:
+                        number_floor = number_floor[0].text
+                    else:
+                        logging.warning("number_floor is empry")
+                except Exception:
+                    logging.error("PROBLEM WITH:\tcount_romms")
+                    ad_data = None
+                ad_data['number_floor'] = number_floor
+                logging.debug(f' -- number_floor:\t{number_floor}')
                 break
             break
-        except Exception:
-            logger.error(f"PROBLEM WITH PAGE:\t{i}")
+        except Exception as e:
+            logger.error(
+                f"PROBLEM WITH PAGE:\t{i}. Exception:\t{e}"
+            )
 
 
 if __name__ == "__main__":
