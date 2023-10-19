@@ -9,7 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from config import URL_REALT, URL_REALT_BASE
-
+import css_selectors as selectors
 
 # format logs
 log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -109,7 +109,7 @@ def parsing_ad(ad: Tag):
     # description_note
     try:
         description_note = soup_ad.select(
-            'section.bg-white:nth-child(6) > div:nth-child(2)')
+            selector=selectors.DESC_NOTE)
         if description_note:
             description_note = ' '.join([i.text for i in description_note])
         else:
@@ -129,7 +129,7 @@ def parsing_ad(ad: Tag):
     # adress
     try:
         adress = soup_ad.select(
-            selector=r'li.md\:w-auto'
+            selector=selectors.ADRESS
         )
         if adress:
             adress = adress[0].text
@@ -150,7 +150,8 @@ def parsing_ad(ad: Tag):
     # price
     try:
         price = soup_ad.select(
-            r'.md\:items-center > div:nth-child(1) > h2:nth-child(1)')
+            selector=selectors.PRICE
+        )
         if price:
             price = price[0].text
         else:
@@ -168,8 +169,8 @@ def parsing_ad(ad: Tag):
 
     # update_date
     try:
-        update_date = soup_ad.select(  # TODO: Вынесети selector в отдельный модуль
-            selector=r'div.text-caption:nth-child(2) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1) > span:nth-child(1)'
+        update_date = soup_ad.select(
+            selector=selectors.UPDATE_DATE
         )
         if update_date:
             update_date = update_date[0].text
@@ -188,7 +189,9 @@ def parsing_ad(ad: Tag):
 
     chars_dict = {}
     try:
-        characteristics = soup_ad.select(r'ul.w-full:nth-child(2)')
+        characteristics = soup_ad.select(
+            selector=selectors.CHAR
+        )
         if characteristics:
             li_params = characteristics[0].find_all('li')
             if li_params:
@@ -215,8 +218,7 @@ def parsing_ad(ad: Tag):
                 "Problem with processing characteristics."
                 "Using {} as the value.")
         )
-        logger.error(f"PROBLEM {e} WITH:\tcharacteristics")
-    logger.debug(f"chars_dict:\t{chars_dict}")
+    logger.debug(f"chars_dict={chars_dict}")
     ad_data['chars'] = chars_dict
 
     # count_romms
@@ -240,7 +242,7 @@ def parsing_ad(ad: Tag):
     # number_floor
     try:
         number_floor = soup_ad.select(
-            selector=r'div.last\:mr-0:nth-child(3) > div:nth-child(1)'
+            selector=selectors.NUMBER_FLOOR
             )
         if number_floor:
             number_floor = number_floor[0].text
