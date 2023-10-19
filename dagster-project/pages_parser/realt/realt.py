@@ -62,7 +62,7 @@ def parsing(url_realt: str, size: int):
                 url_ad = URL_REALT_BASE + href['href']
                 ad_data["url_ad"] = url_ad
 
-                logging.debug(f"url_ad:\t{url_ad}")
+                logger.debug(f"url_ad:\t{url_ad}")
                 try:
                     driver.get(url_ad)
                     soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
@@ -91,7 +91,7 @@ def parsing(url_realt: str, size: int):
                     )
                     title = None
                 ad_data['title'] = title
-                logging.debug(f'title={title}')
+                logger.debug(f'title={title}')
 
                 # description
                 try:
@@ -110,7 +110,7 @@ def parsing(url_realt: str, size: int):
                     )
                     logger.error(f"PROBLEM {e} WITH:\tdescription")
                     description = ''
-                logging.debug(f"description={description}")
+                logger.debug(f"description={description}")
                 ad_data['description'] = ''
 
                 # description_note
@@ -130,7 +130,7 @@ def parsing(url_realt: str, size: int):
                     )
                     logger.error("PROBLEM WITH:\tdescription_note")
                     description_note = ''
-                logging.debug(f"description_note={description_note}")
+                logger.debug(f"description_note={description_note}")
                 ad_data["description"] = ad_data["description"] + ' ' + description_note
 
                 # adress
@@ -170,7 +170,7 @@ def parsing(url_realt: str, size: int):
                          "Using None as the value.")
                     )
                     price = None
-                logging.debug(f"price={price}")
+                logger.debug(f"price={price}")
                 ad_data["price"] = price
 
                 # update_date
@@ -203,25 +203,47 @@ def parsing(url_realt: str, size: int):
                                 name_params = li.find_all('span')
                                 value_params = li.find_all('p')
                                 if name_params and value_params:
-                                    chars_dict[name_params.lower()] = value_params
+                                    name_params = name_params[0].text
+                                    value_params = value_params[0].text
+                                    logger.debug(
+                                        (f'Add params name={name_params}'
+                                         'and params value={value_params}'))
+                                    chars_dict[name_params] = value_params
                                 else:
                                     logger.warning((f"Params is empty.\nname_params:\t{name_params},"
                                                     f"value_params:\t{value_params}"))
                         else:
-                            logger.warning("li_params is empty.")
+                            logger.warning("Value li_params is empty.")
                     else:
-                        logger.warning("characteristics is empty.")
+                        logger.warning("Value characteristics is empty.")
                 except Exception as e:
-                    logging.error(f"PROBLEM {e} WITH:\tcharacteristics")
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing characteristics."
+                         "Using {} as the value.")
+                    )
+                    logger.error(f"PROBLEM {e} WITH:\tcharacteristics")
                 logger.debug(f"chars_dict:\t{chars_dict}")
                 ad_data['chars'] = chars_dict
 
+                # count_romms
                 try:
-                    count_romms = ad_data['chars']["количество комнат"]
-                    logging.debug(f"count_romms:\t{count_romms}")
-                    ad_data["count_romms"] = count_romms
+                    if count_romms := ad_data.get('chars', {}).get("количество комнат", None):
+                        logger.debug(f"count_romms:\t{count_romms}")
+                        ad_data["count_romms"] = count_romms
+                    else:
+                        logger.warning("Value count_romms is empty.")
+                        count_romms = None
                 except Exception as e:
-                    logger.error(f"PROBLEM {e}")
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing count_romms."
+                         "Using None as the value.")
+                    )
+                    count_romms = None
+                logger.debug(f"count_romms={count_romms}")
+                ad_data["count_romms"] = count_romms
+
                 # number_floor
                 try:
                     number_floor = soup_ad.select(
@@ -230,12 +252,16 @@ def parsing(url_realt: str, size: int):
                     if number_floor:
                         number_floor = number_floor[0].text
                     else:
-                        logging.warning("number_floor is empry")
-                except Exception:
-                    logging.error("PROBLEM WITH:\tcount_romms")
+                        logger.warning("number_floor is empry")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing number_floor."
+                         "Using None as the value.")
+                    )
                     ad_data = None
                 ad_data['number_floor'] = number_floor
-                logging.debug(f' -- number_floor:\t{number_floor}')
+                logger.debug(f'number_floor={number_floor}')
                 break
             break
         except Exception as e:
