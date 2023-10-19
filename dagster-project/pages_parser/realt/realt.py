@@ -51,7 +51,10 @@ def parsing(url_realt: str, size: int):
                     string=href['aria-label']).group('number')
 
                 if str(number_ad) in data.keys():
-                    logger.warning(f"Ad number {number_ad} exists.")
+                    logger.warning(
+                        (f"Ad number {number_ad} exists."
+                         f"Completion of ad processing. Go to the next ad.")
+                    )
                     continue
 
                 ad_data = {}
@@ -60,9 +63,16 @@ def parsing(url_realt: str, size: int):
                 ad_data["url_ad"] = url_ad
 
                 logging.debug(f"url_ad:\t{url_ad}")
-
-                driver.get(url_ad)
-                soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
+                try:
+                    driver.get(url_ad)
+                    soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                         f"Problem with load page {url_ad}"
+                         "Complete of ad processing. Go to the next ad.")
+                    )
+                    continue
 
                 # title
                 try:
@@ -70,14 +80,18 @@ def parsing(url_realt: str, size: int):
                     if title:
                         title = title[0].text
                     else:
-                        logger.warning("title is empty")
+                        logger.warning("Value title is empty. Using None as the value.")
                         title = None
 
-                except Exception:
-                    logger.error("PROBLEM WITH:\ttitle")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                         "Problem with processing title."
+                         "Using None as the value.")
+                    )
                     title = None
                 ad_data['title'] = title
-                logging.debug(f'title:\t{title}')
+                logging.debug(f'title={title}')
 
                 # description
                 try:
@@ -86,12 +100,17 @@ def parsing(url_realt: str, size: int):
                     if description:
                         description = ' '.join([i.text for i in description])
                     else:
-                        logger.warning("description is empty")
+                        logger.warning("Value description is empty. Using None as the value.")
                         description = ''
-                except Exception:
-                    logger.error("PROBLEM WITH:\tdescription")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                         "Problem with processing description."
+                         "Using None as the value.")
+                    )
+                    logger.error(f"PROBLEM {e} WITH:\tdescription")
                     description = ''
-                logging.debug(f"description:\t{description}")
+                logging.debug(f"description={description}")
                 ad_data['description'] = ''
 
                 # description_note
@@ -101,12 +120,17 @@ def parsing(url_realt: str, size: int):
                     if description_note:
                         description_note = ' '.join([i.text for i in description_note])
                     else:
-                        logger.warning("description_note is empty")
+                        logger.warning("Value description_note is empty")
                         description_note = ''
-                except Exception:
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing description_note."
+                         "Using '' as the value.")
+                    )
                     logger.error("PROBLEM WITH:\tdescription_note")
                     description_note = ''
-                logging.debug(f"description_note:\t{description_note}")
+                logging.debug(f"description_note={description_note}")
                 ad_data["description"] = ad_data["description"] + ' ' + description_note
 
                 # adress
@@ -117,13 +141,17 @@ def parsing(url_realt: str, size: int):
                     if adress:
                         adress = adress[0].text
                     else:
-                        logger.warning("adress is empty")
+                        logger.warning("Value adress is empty")
                         adress = None
                     logger.debug(f"adress:\t{adress}")
-                except Exception:
-                    logger.error("PROBLEM WITH:\tadress")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing adress."
+                         "Using None as the value.")
+                    )
                     adress = None
-                logger.debug(f"adress:\t{adress}")
+                logger.debug(f"adress={adress}")
                 ad_data['adress'] = adress
 
                 # price
@@ -133,12 +161,16 @@ def parsing(url_realt: str, size: int):
                     if price:
                         price = price[0].text
                     else:
-                        logger.warning("price is empty.")
+                        logger.warning("Value price is empty.")
                         price = None
-                except Exception:
-                    logger.error("PROBLEM WITH:\tprice")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing price."
+                         "Using None as the value.")
+                    )
                     price = None
-                logging.debug(f"price:\t{price}")
+                logging.debug(f"price={price}")
                 ad_data["price"] = price
 
                 # update_date
@@ -151,10 +183,14 @@ def parsing(url_realt: str, size: int):
                     else:
                         update_date = None
                         logger.warning("update_date is empty.")
-                except Exception:
-                    logger.error("PROBLEM WITH:\tupdate_date")
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:{e}"
+                         "Problem with processing update_date."
+                         "Using None as the value.")
+                    )
                     update_date = None
-                logger.debug(f"update_date:\t{update_date}")
+                logger.debug(f"update_date={update_date}")
                 ad_data["update_date"] = update_date
 
                 chars_dict = {}
@@ -175,15 +211,17 @@ def parsing(url_realt: str, size: int):
                             logger.warning("li_params is empty.")
                     else:
                         logger.warning("characteristics is empty.")
-                except Exception:
-                    logging.error("PROBLEM WITH:\tcharacteristics")
+                except Exception as e:
+                    logging.error(f"PROBLEM {e} WITH:\tcharacteristics")
                 logger.debug(f"chars_dict:\t{chars_dict}")
                 ad_data['chars'] = chars_dict
 
-                count_romms = ad_data['chars']["количество комнат"]
-                logging.debug(f"count_romms:\t{count_romms}")
-                ad_data["count_romms"] = count_romms
-
+                try:
+                    count_romms = ad_data['chars']["количество комнат"]
+                    logging.debug(f"count_romms:\t{count_romms}")
+                    ad_data["count_romms"] = count_romms
+                except Exception as e:
+                    logger.error(f"PROBLEM {e}")
                 # number_floor
                 try:
                     number_floor = soup_ad.select(
@@ -202,8 +240,9 @@ def parsing(url_realt: str, size: int):
             break
         except Exception as e:
             logger.error(
-                f"PROBLEM WITH PAGE:\t{i}. Exception:\t{e}"
+                f"Exception:\t{e}"
             )
+            logger.error(f"Critical error. Completion of page {i} processing. Go to the next page")
 
 
 if __name__ == "__main__":
