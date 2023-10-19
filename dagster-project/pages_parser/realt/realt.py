@@ -37,6 +37,7 @@ def parsing(url_realt: str, size: int):
 
     # create list urls for ads
     for i in range(1, size + 1):
+        logger.info(f"Start parsing page {i}")
         try:
             url = url_realt.format(i=i)
             driver.get(url)
@@ -46,9 +47,17 @@ def parsing(url_realt: str, size: int):
             div_elements_with_data_index = soup.find_all('div', {'data-index': True})
             for ad in div_elements_with_data_index:
                 href = ad.find_all('a')[0]
-                number_ad = re.search(
-                    pattern=r'\№(?P<number>\d+)',
-                    string=href['aria-label']).group('number')
+                try:
+                    number_ad = re.search(
+                        pattern=r'\№(?P<number>\d+)',
+                        string=href['aria-label']).group('number')
+                except Exception as e:
+                    logger.error(
+                        (f"Exception:\t{e}"
+                         "Problem with parsing number ad."
+                         "Complete of ad processing. Go to the next ad.")
+                    )
+                logger.info(f"Start parsing ad {ad}")
 
                 if str(number_ad) in data.keys():
                     logger.warning(
