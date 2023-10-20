@@ -101,14 +101,15 @@ def get_description_note(soup_ad) -> str:
     return description_note
 
 
-def get_adress(soup_ad) -> str | None:
+def get_adress(soup_ad) -> str | None:  # TODO: Переписать так чтоб город  и адресс были раздельно
+    # Тоже самое добавить и в другие парсера
     try:
         adress = soup_ad.select(
             selector=selectors.ADRESS
         )
         if adress:
-            adress = adress[0].text
-            adress: str = adress.replace(r"\xa0", " ")
+            adress: str = adress[0].text
+            adress = re.sub(string=adress, repl=" ", pattern=r"\xa0")
         else:
             logger.warning("Value adress is empty")
             adress = None
