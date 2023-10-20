@@ -27,11 +27,15 @@ console_handler.setFormatter(formatter_console)
 logger.addHandler(console_handler)
 
 
-def parsing_ad(soup_ad: Tag) -> dict | bool:
+def get_title(soup_ad: BeautifulSoup) -> str | None:
+    """Функция для получения заголовка объявления
 
-    ad_data = {}
+    Args:
+        soup_ad (BeautifulSoup): bs4 объект html страницы
 
-    # title
+    Returns:
+        str | None: заголовок объявления
+    """
     try:
         title = soup_ad.select(
             selector=selectors.TITLE
@@ -41,7 +45,6 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
         else:
             logger.warning("Value title is empty. Using None as the value.")
             title = None
-
     except Exception as e:
         logger.error(
             (f"Exception:\t{e}"
@@ -49,10 +52,18 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         title = None
-    ad_data['title'] = title
-    logger.debug(f'title={title}')
+    return title
 
-    # description
+
+def get_description(soup_ad: BeautifulSoup) -> str | None:
+    """Функция возращает описание объявления.
+
+    Args:
+        soup_ad (BeautifulSoup): bs4 объект html страницы
+
+    Returns:
+        str | None: Описание объявления.
+    """
     try:
         description = soup_ad.select(
             selector=selectors.DESC)
@@ -68,10 +79,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         description = ''
-    logger.debug(f"description={description}")
-    ad_data['description'] = ''
+    return description
 
-    # description_note
+
+def get_description_note(soup_ad) -> str:
     try:
         description_note = soup_ad.select(
             selector=selectors.DESC_NOTE)
@@ -87,16 +98,17 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using '' as the value.")
         )
         description_note = ''
-    logger.debug(f"description_note={description_note}")
-    ad_data["description"] = ad_data["description"] + ' ' + description_note
+    return description_note
 
-    # adress
+
+def get_adress(soup_ad) -> str | None:
     try:
         adress = soup_ad.select(
             selector=selectors.ADRESS
         )
         if adress:
             adress = adress[0].text
+            adress: str = adress.replace(r"\xa0", " ")
         else:
             logger.warning("Value adress is empty")
             adress = None
@@ -108,10 +120,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         adress = None
-    logger.debug(f"adress={adress}")
-    ad_data['adress'] = adress
+    return adress
 
-    # price
+
+def get_price(soup_ad) -> str | None:
     try:
         price = soup_ad.select(
             selector=selectors.PRICE
@@ -128,10 +140,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         price = None
-    logger.debug(f"price={price}")
-    ad_data["price"] = price
+    return price
 
-    # update_date
+
+def get_update_date(soup_ad) -> str | None:
     try:
         update_date = soup_ad.select(
             selector=selectors.UPDATE_DATE
@@ -148,9 +160,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         update_date = None
-    logger.debug(f"update_date={update_date}")
-    ad_data["update_date"] = update_date
+    return update_date
 
+
+def get_chars_dict(soup_ad) -> dict:
     chars_dict = {}
     try:
         characteristics = soup_ad.select(
@@ -182,10 +195,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Problem with processing characteristics."
                 "Using {} as the value.")
         )
-    logger.debug(f"chars_dict={chars_dict}")
-    ad_data['chars'] = chars_dict
+    return chars_dict
 
-    # count_romms
+
+def get_count_romms(ad_data: dict) -> str | None:
     try:
         if count_romms := ad_data.get('chars', {}).get("количество комнат", None):
             logger.debug(f"count_romms:\t{count_romms}")
@@ -200,10 +213,10 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Using None as the value.")
         )
         count_romms = None
-    logger.debug(f"count_romms={count_romms}")
-    ad_data["count_romms"] = count_romms
+    return count_romms
 
-    # number_floor
+
+def get_number_floor(soup_ad) -> str | None:
     try:
         number_floor = soup_ad.select(
             selector=selectors.NUMBER_FLOOR
@@ -218,9 +231,59 @@ def parsing_ad(soup_ad: Tag) -> dict | bool:
                 "Problem with processing number_floor."
                 "Using None as the value.")
         )
-        ad_data = None
+        number_floor = None
+    return number_floor
+
+
+def parsing_ad(soup_ad: Tag) -> dict | bool:
+    ad_data = {}
+
+    # title
+
+    title = get_title(soup_ad=soup_ad)
+    ad_data['title'] = title
+    logger.debug(f'title={title}')
+
+    # description
+    description = get_description(soup_ad=soup_ad)
+    logger.debug(f"description={description}")
+    ad_data['description'] = ''
+
+    # description_note
+    description_note = get_description_note(soup_ad=soup_ad)
+    logger.debug(f"description_note={description_note}")
+    ad_data["description"] = ad_data["description"] + ' ' + description_note
+
+    # adress
+    adress = get_adress(soup_ad=soup_ad)
+    logger.debug(f"adress={adress}")
+    ad_data['adress'] = adress
+
+    # price
+    price = get_price(soup_ad=soup_ad)
+    logger.debug(f"price={price}")
+    ad_data["price"] = price
+
+    # update_date
+    update_date = get_update_date(soup_ad=soup_ad)
+    logger.debug(f"update_date={update_date}")
+    ad_data["update_date"] = update_date
+
+    chars_dict = get_chars_dict(soup_ad=soup_ad)
+    logger.debug(f"chars_dict={chars_dict}")
+    ad_data['chars'] = chars_dict
+
+    # count_romms
+    count_romms = get_count_romms(ad_data=ad_data)
+    logger.debug(f"count_romms={count_romms}")
+    ad_data["count_romms"] = count_romms
+
+    # number_floor
+    number_floor = get_number_floor(soup_ad=soup_ad)
     ad_data['number_floor'] = number_floor
     logger.debug(f'number_floor={number_floor}')
+
+    return ad_data
 
 
 def parsing(url_realt: str, size: int):
@@ -263,9 +326,11 @@ def parsing(url_realt: str, size: int):
                             f"Completion of ad processing. Go to the next ad.")
                     )
                     continue
+
                 url_ad = URL_REALT_BASE + href['href']
 
                 logger.debug(f"url_ad:\t{url_ad}")
+
                 try:
                     driver.get(url_ad)
                     soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
