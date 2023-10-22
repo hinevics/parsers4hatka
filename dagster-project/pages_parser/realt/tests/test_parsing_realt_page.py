@@ -1,6 +1,7 @@
 # TODO: Разработка тестов для тестовой страницы!
 # Добавить возможность подменять странницу по которой будет выполняться запрос
 import sys
+import re
 
 from bs4 import BeautifulSoup
 
@@ -99,4 +100,20 @@ def test_get_price(soup):
     actual = get_price(soup_ad=soup)
     print('-----', actual)
     assert isinstance(actual, str)
-    assert 
+    assert len(actual) > 0
+    actual = re.sub(pattern=r'\s', repl='', string=actual)
+    exepted = "5922р./мес."
+    assert actual == exepted
+
+
+def test_get_update_date(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import get_update_date
+    except ModuleNotFoundError or ImportError:
+        assert False
+    exepted = "13.10.2023"
+    actual = get_update_date(soup_ad=soup)
+    assert isinstance(actual, str)
+    assert len(actual) > 0
+    assert actual == exepted
