@@ -1,34 +1,33 @@
 # TODO: Разработка тестов для тестовой страницы!
 # Добавить возможность подменять странницу по которой будет выполняться запрос
 import sys
-import re
 
 from bs4 import BeautifulSoup
 
 from test_config import TEST_URL, TEST_URL2
 
 
-# def test_load_page(driver):
-#     # test how work fixture driver
-#     driver.get(TEST_URL)
-#     soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
-#     assert soup_ad is not None
+def test_load_page(driver):
+    # test how work fixture driver
+    driver.get(TEST_URL)
+    soup_ad = BeautifulSoup(driver.page_source, 'html.parser')
+    assert soup_ad is not None
 
 
-# def test_soup(soup):
-#     # test how work fixture soup
-#     assert soup is not None
+def test_soup(soup):
+    # test how work fixture soup
+    assert soup is not None
 
 
-# def test_import_get_title():
-#     # test function get_title
-#     try:
-#         sys.path.append('../realt')
-#         from realt import get_title
-#         get_title
-#         assert True
-#     except ModuleNotFoundError:
-#         assert False
+def test_import_get_title():
+    # test function get_title
+    try:
+        sys.path.append('../realt')
+        from realt import get_title
+        get_title
+        assert True
+    except ModuleNotFoundError:
+        assert False
 
 
 def test_get_title_normal(soup):
