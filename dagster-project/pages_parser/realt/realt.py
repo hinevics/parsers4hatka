@@ -177,7 +177,7 @@ def get_chars_dict(soup_ad) -> dict:
                     name_params = li.find_all('span')
                     value_params = li.find_all('p')
                     if name_params and value_params:
-                        name_params = name_params[0].text
+                        name_params = name_params[0].text.lower()
                         value_params = value_params[0].text
                         logger.debug(
                             (f'Add params name={name_params}'

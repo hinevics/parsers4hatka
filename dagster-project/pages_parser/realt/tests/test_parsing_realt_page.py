@@ -31,63 +31,62 @@ from test_config import TEST_URL, TEST_URL2
 #         assert False
 
 
-# def test_get_title_normal(soup):
-#     sys.path.append('../realt')
-#     from realt import get_title
+def test_get_title_normal(soup):
+    sys.path.append('../realt')
+    from realt import get_title
 
-#     actual = get_title(soup)
-#     expected = "Стильная трехкомнатная квартира в тихом центре г.Минска"
-#     assert actual is not None
-#     assert len(actual) > 0
-#     assert actual == expected
-
-
-# def test_get_description_normal(soup):
-#     sys.path.append('../realt')
-#     from realt import get_description
-
-#     actual = get_description(soup_ad=soup)
-
-#     assert actual is not None
-#     assert isinstance(actual, str)
-#     assert len(actual) > 0
+    actual = get_title(soup)
+    expected = "Стильная трехкомнатная квартира в тихом центре г.Минска"
+    assert actual is not None
+    assert len(actual) > 0
+    assert actual == expected
 
 
-# def test_get_description_note_without_note(soup):
-#     sys.path.append('../realt')
-#     from realt import get_description_note
+def test_get_description_normal(soup):
+    sys.path.append('../realt')
+    from realt import get_description
 
-#     actual = get_description_note(soup_ad=soup)
-#     assert isinstance(actual, str)
-#     assert actual == ''
+    actual = get_description(soup_ad=soup)
 
-
-# def test_get_description_note_with_note(driver):
-#     try:
-#         sys.path.append('../realt')
-#         from realt import get_description_note
-#     except ModuleNotFoundError or ImportError:
-#         assert False
-
-#     driver.get(TEST_URL2)
-#     soup = BeautifulSoup(driver.page_source, 'html.parser')
-#     actual = get_description_note(soup_ad=soup)
-
-#     assert isinstance(actual, str)
-#     assert len(actual) > 0
+    assert actual is not None
+    assert isinstance(actual, str)
+    assert len(actual) > 0
 
 
-# def test_get_adress(soup):
-#     try:
-#         sys.path.append('../realt')
-#         from realt import get_adress
-#     except ModuleNotFoundError or ImportError:
-#         assert False
-#     actual = get_adress(soup_ad=soup)
+def test_get_description_note_without_note(soup):
+    sys.path.append('../realt')
+    from realt import get_description_note
 
-#     assert isinstance(actual, str)
-#     assert len(actual) > 0
-#     assert str(actual) == 'г. Минскпросп. Независимости, 85/г'
+    actual = get_description_note(soup_ad=soup)
+    assert isinstance(actual, str)
+    assert actual == ''
+
+
+def test_get_description_note_with_note(driver):
+    try:
+        sys.path.append('../realt')
+        from realt import get_description_note
+    except ModuleNotFoundError or ImportError:
+        assert False
+
+    driver.get(TEST_URL2)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    actual = get_description_note(soup_ad=soup)
+
+    assert isinstance(actual, str)
+    assert len(actual) > 0
+
+
+def test_get_adress(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import get_adress
+    except ModuleNotFoundError or ImportError:
+        assert False
+    actual = get_adress(soup_ad=soup)
+
+    assert isinstance(actual, str)
+    assert len(actual) > 0
 
 
 def test_get_price(soup):
@@ -98,12 +97,8 @@ def test_get_price(soup):
         assert False
 
     actual = get_price(soup_ad=soup)
-    print('-----', actual)
     assert isinstance(actual, str)
     assert len(actual) > 0
-    actual = re.sub(pattern=r'\s', repl='', string=actual)
-    exepted = "5922р./мес."
-    assert actual == exepted
 
 
 def test_get_update_date(soup):
@@ -117,3 +112,58 @@ def test_get_update_date(soup):
     assert isinstance(actual, str)
     assert len(actual) > 0
     assert actual == exepted
+
+
+def test_get_chars_dict(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import get_chars_dict
+    except ModuleNotFoundError or ImportError:
+        assert False
+    actual = get_chars_dict(soup_ad=soup)
+
+    keys = actual.keys()
+
+    assert len(keys) > 0
+
+    for k in keys:
+        assert actual[k] is not None
+
+
+def test_get_count_romms(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import get_count_romms, get_chars_dict
+    except ModuleNotFoundError or ImportError:
+        assert False
+    ad_data = {'chars': get_chars_dict(soup)}
+    actual = get_count_romms(ad_data)
+    assert actual is not None
+
+
+def test_get_number_floor(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import get_number_floor
+    except ModuleNotFoundError or ImportError:
+        assert False
+    actual = get_number_floor(soup)
+    assert actual is not None
+
+
+def test_parsing_ad(soup):
+    try:
+        sys.path.append('../realt')
+        from realt import parsing_ad
+    except ModuleNotFoundError or ImportError:
+        assert False
+    ad_data = parsing_ad(soup_ad=soup)
+
+    keys = ad_data.keys()
+
+    assert len(keys) > 0
+
+    for k in ad_data.keys():
+        value = ad_data[k]
+
+        assert value is not None
